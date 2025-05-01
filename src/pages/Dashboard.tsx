@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEquipment } from '@/contexts/EquipmentContext';
@@ -14,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import InventoryManagerDashboard from './InventoryManagerDashboard';
 
 const Dashboard = () => {
   const { user, hasRole } = useAuth();
@@ -21,8 +21,24 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [chartFilter, setChartFilter] = useState<'category' | 'status' | 'location'>('category');
 
+  useEffect(() => {
+    if (user) {
+      // Redirect to specific dashboard based on role
+      if (user.role === 'nurse') {
+        navigate('/equipment'); // For now, redirect nurses to equipment list
+      } else if (user.role === 'logistics_staff') {
+        navigate('/equipment'); // For now, redirect logistics staff to equipment list
+      }
+    }
+  }, [user, navigate]);
+
   if (!user) {
     return <div>Loading...</div>;
+  }
+
+  // Render role-specific dashboard
+  if (user.role === 'inventory_manager') {
+    return <InventoryManagerDashboard />;
   }
 
   // Calculate equipment statistics
@@ -111,7 +127,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {hasRole('manager') && (
+        {hasRole('inventory_manager') && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="col-span-2">
               <CardHeader>
@@ -205,7 +221,7 @@ const Dashboard = () => {
                     </Button>
                   </div>
                   
-                  {hasRole('logistics_staff') && (
+                  {hasRole(['logistics_staff', 'inventory_manager']) && (
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <div className="font-medium">Add New Equipment</div>
                       <Button
@@ -255,23 +271,11 @@ const Dashboard = () => {
                   className="h-auto py-4 flex flex-col items-center"
                   onClick={() => navigate('/reports/new')}
                 >
-                  <span className="text-lg mb-1">Report Damage</span>
-                  <span className="text-sm text-gray-500">Report equipment issues</span>
-                </Button>
-              )}
-              
-              {hasRole(['logistics_staff', 'manager']) && (
-                <Button 
-                  variant="outline" 
-                  className="h-auto py-4 flex flex-col items-center"
-                  onClick={() => navigate('/reports')}
-                >
-                  <span className="text-lg mb-1">View Reports</span>
                   <span className="text-sm text-gray-500">Manage damage reports</span>
                 </Button>
               )}
               
-              {hasRole('manager') && (
+              {hasRole('inventory_manager') && (
                 <Button 
                   variant="outline" 
                   className="h-auto py-4 flex flex-col items-center"

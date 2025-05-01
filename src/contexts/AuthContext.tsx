@@ -1,11 +1,11 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, UserRole } from '@/types';
-import { users } from '@/data/mockData';
+import { getUsers, getUserById, initializeStorage } from '@/lib/jsonStorage';
 
 interface AuthContextType {
   user: User | null;
-  login: (id: string) => boolean;
+  login: (username: string, password: string) => boolean;
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
@@ -16,25 +16,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   
+  // Initialize storage on first load
+  useEffect(() => {
+    initializeStorage();
+  }, []);
+  
   // Check if user is already authenticated on load
   useEffect(() => {
     const isAuth = sessionStorage.getItem('authenticated') === 'true';
     const savedUserId = sessionStorage.getItem('userId');
     
     if (isAuth && savedUserId) {
-      const foundUser = users.find(u => u.id === savedUserId);
+      const foundUser = getUserById(savedUserId);
       if (foundUser) {
         setUser(foundUser);
       }
     }
   }, []);
 
-  const login = (id: string): boolean => {
-    const foundUser = users.find(u => u.id === id);
+  const login = (username: string, password: string): boolean => {
+    const users = getUsers();
+    const foundUser = users.find(u => u.username === username && u.password === password);
     if (foundUser) {
       setUser(foundUser);
       // Save user ID in sessionStorage
-      sessionStorage.setItem('userId', id);
+      sessionStorage.setItem('userId', foundUser.id);
       return true;
     }
     return false;

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   Equipment, 
   EquipmentHistory, 
@@ -9,14 +9,21 @@ import {
   EquipmentRequest,
   Notification
 } from '@/types';
-import { 
-  equipments as initialEquipment, 
-  equipmentHistory as initialHistory,
-  categories as initialCategories,
-  damageReports as initialDamageReports,
-  equipmentRequests as initialRequests,
-  notifications as initialNotifications
-} from '@/data/mockData';
+import {
+  getEquipments,
+  saveEquipments,
+  getEquipmentHistory,
+  saveEquipmentHistory,
+  getCategories,
+  saveCategories,
+  getDamageReports,
+  saveDamageReports,
+  getEquipmentRequests,
+  saveEquipmentRequests,
+  getNotifications,
+  saveNotifications,
+  generateId
+} from '@/lib/jsonStorage';
 import { useToast } from '@/hooks/use-toast';
 
 interface EquipmentContextType {
@@ -53,20 +60,29 @@ interface EquipmentContextType {
 const EquipmentContext = createContext<EquipmentContextType | undefined>(undefined);
 
 export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [equipment, setEquipment] = useState<Equipment[]>(initialEquipment);
-  const [history, setHistory] = useState<EquipmentHistory[]>(initialHistory);
-  const [categories, setCategories] = useState<EquipmentCategory[]>(initialCategories);
-  const [damageReports, setDamageReports] = useState<DamageReport[]>(initialDamageReports);
-  const [equipmentRequests, setEquipmentRequests] = useState<EquipmentRequest[]>(initialRequests);
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [history, setHistory] = useState<EquipmentHistory[]>([]);
+  const [categories, setCategories] = useState<EquipmentCategory[]>([]);
+  const [damageReports, setDamageReports] = useState<DamageReport[]>([]);
+  const [equipmentRequests, setEquipmentRequests] = useState<EquipmentRequest[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const { toast } = useToast();
-
-  // Generate a simple ID 
-  const generateId = () => Date.now().toString();
+  
+  // Load data from storage on initial render
+  useEffect(() => {
+    setEquipment(getEquipments());
+    setHistory(getEquipmentHistory());
+    setCategories(getCategories());
+    setDamageReports(getDamageReports());
+    setEquipmentRequests(getEquipmentRequests());
+    setNotifications(getNotifications());
+  }, []);
 
   const addEquipment = (newEquipment: Omit<Equipment, 'id'>) => {
     const equipmentWithId = { ...newEquipment, id: generateId() };
-    setEquipment([...equipment, equipmentWithId]);
+    const updatedEquipment = [...equipment, equipmentWithId];
+    setEquipment(updatedEquipment);
+    saveEquipments(updatedEquipment);
     toast({
       title: "Equipment Added",
       description: `${newEquipment.name} has been added to inventory.`,
@@ -93,8 +109,13 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       notes
     };
 
+    const updatedHistory = [...history, historyEntry];
+
     setEquipment(updatedEquipment);
-    setHistory([...history, historyEntry]);
+    setHistory(updatedHistory);
+    
+    saveEquipments(updatedEquipment);
+    saveEquipmentHistory(updatedHistory);
 
     toast({
       title: "Status Updated",
@@ -122,8 +143,13 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       notes
     };
 
+    const updatedHistory = [...history, historyEntry];
+
     setEquipment(updatedEquipment);
-    setHistory([...history, historyEntry]);
+    setHistory(updatedHistory);
+    
+    saveEquipments(updatedEquipment);
+    saveEquipmentHistory(updatedHistory);
 
     toast({
       title: "Location Updated",
@@ -153,8 +179,13 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       notes
     };
 
+    const updatedHistory = [...history, historyEntry];
+
     setEquipment(updatedEquipment);
-    setHistory([...history, historyEntry]);
+    setHistory(updatedHistory);
+    
+    saveEquipments(updatedEquipment);
+    saveEquipmentHistory(updatedHistory);
 
     toast({
       title: assignedTo ? "Equipment Assigned" : "Equipment Returned",
@@ -174,7 +205,9 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const addCategory = (newCategory: Omit<EquipmentCategory, 'id'>) => {
     const categoryWithId = { ...newCategory, id: generateId() };
-    setCategories([...categories, categoryWithId]);
+    const updatedCategories = [...categories, categoryWithId];
+    setCategories(updatedCategories);
+    saveCategories(updatedCategories);
     toast({
       title: "Category Added",
       description: `${newCategory.name} category has been created.`,
@@ -182,9 +215,11 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const updateCategory = (id: string, updatedCategory: Partial<EquipmentCategory>) => {
-    setCategories(categories.map(cat => 
+    const updatedCategories = categories.map(cat => 
       cat.id === id ? { ...cat, ...updatedCategory } : cat
-    ));
+    );
+    setCategories(updatedCategories);
+    saveCategories(updatedCategories);
     toast({
       title: "Category Updated",
       description: "Category details have been updated.",
@@ -204,7 +239,9 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       return;
     }
     
-    setCategories(categories.filter(cat => cat.id !== id));
+    const updatedCategories = categories.filter(cat => cat.id !== id);
+    setCategories(updatedCategories);
+    saveCategories(updatedCategories);
     toast({
       title: "Category Deleted",
       description: "The category has been removed.",
@@ -218,7 +255,9 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       status: 'reported'
     };
     
-    setDamageReports([...damageReports, reportWithId]);
+    const updatedReports = [...damageReports, reportWithId];
+    setDamageReports(updatedReports);
+    saveDamageReports(updatedReports);
     
     // Update equipment status to damaged
     updateEquipmentStatus(
@@ -249,6 +288,7 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
     );
     
     setDamageReports(updatedReports);
+    saveDamageReports(updatedReports);
     
     // If resolved, update equipment status to available
     if (status === 'resolved') {
@@ -280,7 +320,9 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       status: 'pending',
     };
     
-    setEquipmentRequests([...equipmentRequests, requestWithId]);
+    const updatedRequests = [...equipmentRequests, requestWithId];
+    setEquipmentRequests(updatedRequests);
+    saveEquipmentRequests(updatedRequests);
     
     toast({
       title: "Request Submitted",
@@ -303,6 +345,7 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
     );
     
     setEquipmentRequests(updatedRequests);
+    saveEquipmentRequests(updatedRequests);
     
     if (status === 'approved') {
       // Create notification for requester
@@ -332,13 +375,17 @@ export const EquipmentProvider: React.FC<{ children: ReactNode }> = ({ children 
       isRead: false
     };
     
-    setNotifications([...notifications, newNotification]);
+    const updatedNotifications = [...notifications, newNotification];
+    setNotifications(updatedNotifications);
+    saveNotifications(updatedNotifications);
   };
 
   const markNotificationAsRead = (id: string) => {
-    setNotifications(notifications.map(n => 
+    const updatedNotifications = notifications.map(n => 
       n.id === id ? { ...n, isRead: true } : n
-    ));
+    );
+    setNotifications(updatedNotifications);
+    saveNotifications(updatedNotifications);
   };
 
   const getUnreadNotificationsForUser = (userId: string) => {

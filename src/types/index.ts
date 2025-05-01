@@ -1,11 +1,13 @@
 
 export type EquipmentStatus = 'available' | 'in-use' | 'damaged';
 
-export type UserRole = 'logistics_staff' | 'nurse' | 'manager';
+export type UserRole = 'inventory_manager' | 'logistics_staff' | 'nurse';
 
 export interface User {
   id: string;
   name: string;
+  username: string;
+  password: string;
   role: UserRole;
   department: string;
 }

@@ -1,43 +1,46 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { users } from '@/data/mockData';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    if (!selectedUserId) {
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!username || !password) {
       toast({
         title: "Error",
-        description: "Please select a user to login.",
+        description: "Mohon masukkan nama pengguna dan kata sandi.",
         variant: "destructive"
       });
       return;
     }
 
-    const success = login(selectedUserId);
+    const success = login(username, password);
     
     if (success) {
       // Set authentication status in sessionStorage
       sessionStorage.setItem('authenticated', 'true');
       
       toast({
-        title: "Login Successful",
-        description: "Welcome to Hospital Equipment Management System",
+        title: "Login Berhasil",
+        description: "Selamat datang di Sistem Manajemen Peralatan Rumah Sakit",
       });
       navigate('/dashboard');
     } else {
       toast({
-        title: "Login Failed",
-        description: "Invalid user selection.",
+        title: "Login Gagal",
+        description: "Nama pengguna atau kata sandi tidak valid.",
         variant: "destructive"
       });
     }
@@ -45,39 +48,41 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Hospital Equipment Management System</h1>
-          <p className="text-gray-600">Sign in to access your dashboard</p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="user" className="text-sm font-medium text-gray-700">
-              Select User
-            </label>
-            <Select onValueChange={setSelectedUserId} value={selectedUserId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a user" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.role.replace('_', ' ')})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button 
-            className="w-full" 
-            onClick={handleLogin}
-          >
-            Login
-          </Button>
-        </div>
-      </div>
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Sistem Manajemen Peralatan Rumah Sakit</CardTitle>
+          <CardDescription>Masuk untuk mengakses dashboard Anda</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Nama Pengguna</Label>
+              <Input 
+                id="username" 
+                type="text" 
+                placeholder="Masukkan nama pengguna Anda" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Kata Sandi</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                placeholder="Masukkan kata sandi Anda" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full mt-4">
+              Masuk
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
