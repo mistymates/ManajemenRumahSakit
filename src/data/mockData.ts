@@ -1,4 +1,3 @@
-
 import { 
   Equipment, 
   EquipmentHistory, 
@@ -12,11 +11,11 @@ import {
 } from '@/types';
 
 export const users: User[] = [
-  { id: '1', name: 'Luis Morgan', role: 'logistics_staff', department: 'Logistics' },
-  { id: '2', name: 'Lailatul Hadhari', role: 'nurse', department: 'ICU' },
-  { id: '3', name: 'Fajar Jauza', role: 'manager', department: 'Administration' },
-  { id: '4', name: 'Jihan Rizkyta', role: 'nurse', department: 'ER' },
-  { id: '5', name: 'Arya Kamal', role: 'logistics_staff', department: 'Pharmacy' },
+  { id: '1', name: 'Fajar', username: 'fajar', password: 'password123', role: 'logistics_staff', department: 'Logistics' },
+  { id: '2', name: 'Lailatul Hadhari', username: 'lailatul', password: 'password123', role: 'nurse', department: 'ICU' },
+  { id: '3', name: 'Arya', username: 'arya', password: 'password123', role: 'inventory_manager', department: 'Administration' },
+  { id: '4', name: 'Jihan Rizkyta', username: 'jihan', password: 'password123', role: 'nurse', department: 'ER' },
+  { id: '5', name: 'Luis Morgan', username: 'luis', password: 'password123', role: 'logistics_staff', department: 'Pharmacy' },
 ];
 
 export const departments: Department[] = [
