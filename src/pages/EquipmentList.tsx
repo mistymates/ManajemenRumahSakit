@@ -85,7 +85,7 @@ const EquipmentList = () => {
               <Input
                 id="search"
                 type="text"
-                placeholder="Search by name, serial number, or location..."
+                placeholder="Search by name, number, or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
